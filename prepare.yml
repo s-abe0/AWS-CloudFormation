@@ -1,0 +1,49 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Update yum cache
+      yum:
+        update_cache: true
+        state: latest
+        
+    - name: Install packages
+      yum:
+        name: net-tools, python, bind-utils, yum-utils, iptables-services, bridge-utils, bash-completion,
+              kexec-tools, sos, psacct, glusterfs-fuse, lvm2, docker, NetworkManager, nfs-utils, docker
+        state: latest
+        
+    - name: Start and Enable NetworkManager
+      service:
+        name: NetworkManager
+        state: started
+        enabled: yes
+        
+    - name: Start and Enable docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      
+    - name: Add openshift-origin 3.11 repo on all nodes
+      yum_repository:
+        baseurl: "https://rpms.svc.ci.openshift.org/openshift-origin-v3.11/"
+        gpgcheck: false
+        description: OKD 3.11 repo
+        name: okd
+
+- hosts: localhost
+  become: true
+  tasks:
+    - name: Install git on this node
+      yum:
+        name: git
+        state: latest         
+        
+    - name: Pull OpenShift git repo
+      git:
+        repo: https://github.com/openshift/openshift-ansible
+        dest: /home/centos/openshift-ansible
+        version: release-3.11
+        
+    
