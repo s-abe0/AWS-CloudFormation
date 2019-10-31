@@ -1,0 +1,269 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata: {}
+Parameters:
+###########
+  FQDN:
+    Description: A fully-qualified domain name.
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '(?!-)[a-zA-Z0-9-.]*(?<!-)'
+    ConstraintDescription: ''
+    Default: test.com
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instance
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    ConstraintDescription: ''
+  AvailabilityZone:
+    Type: 'AWS::EC2::AvailabilityZone::Name'
+    ConstraintDescription: ''
+    Default: us-east-1a
+  VpcId:
+    Description: An ID of the VPC to use for configuration
+    Type: 'AWS::EC2::VPC::Id'
+  MasterInstanceType:
+    Description: Openshift Master Instance Type
+    Type: String
+    Default: t2.micro
+    AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge,
+      t3.nano, t3.micro, t3.small, t3.medium, t3.large, t3.xlarge, t3.2xlarge,
+      m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge,
+      m5.large, m5.xlarge, m5.2xlarge, m5.4xlarge,
+      c5.large, c5.xlarge, c5.2xlarge, c5.4xlarge, c5.9xlarge,
+      g3.8xlarge,
+      r5.large, r5.xlarge, r5.2xlarge, r5.4xlarge, r3.12xlarge,
+      i3.xlarge, i3.2xlarge, i3.4xlarge, i3.8xlarge,
+      d2.xlarge, d2.2xlarge, d2.4xlarge, d2.8xlarge]
+    ConstraintDescription: must be a valid EC2 instance type.
+  NodeInstanceType:
+    Description: Openshift Node Instance Type
+    Type: String
+    Default: t2.micro
+    AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge,
+      t3.nano, t3.micro, t3.small, t3.medium, t3.large, t3.xlarge, t3.2xlarge,
+      m4.large, m4.xlarge, m4.2xlarge, m4.4xlarge, m4.10xlarge,
+      m5.large, m5.xlarge, m5.2xlarge, m5.4xlarge,
+      c5.large, c5.xlarge, c5.2xlarge, c5.4xlarge, c5.9xlarge,
+      g3.8xlarge,
+      r5.large, r5.xlarge, r5.2xlarge, r5.4xlarge, r3.12xlarge,
+      i3.xlarge, i3.2xlarge, i3.4xlarge, i3.8xlarge,
+      d2.xlarge, d2.2xlarge, d2.4xlarge, d2.8xlarge]
+    ConstraintDescription: must be a valid EC2 instance type.
+  GlusterStorageSize:
+    Description: Take storage wanted for pods and divide by 3.
+    Type: String
+    ConstraintDescription: ''
+ 
+
+Mappings:
+#########
+  RegionMap:
+    us-east-2:
+      CentOS7: "ami-0f2b4fc905b0bd1f1"
+    us-east-1:
+      CentOS7: "ami-02eac2c0129f6376b"
+    us-west-2:
+      CentOS7: "ami-01ed306a12b7d1c96"
+      
+
+Resources:
+##########
+  openshiftmaster:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      PrivateIpAddress: 172.31.0.120
+      SecurityGroupIds:
+        - !Ref mastersecgroup
+      Tags:
+      - Key: Name
+        Value: openshift-master1-test
+      InstanceType: !Ref MasterInstanceType
+      KeyName: !Ref KeyName
+      AvailabilityZone: !Ref AvailabilityZone
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", CentOS7]
+      BlockDeviceMappings:
+        - 
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 80
+    
+  openshiftnode1:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      PrivateIpAddress: 172.31.0.121
+      SecurityGroupIds:
+        - !Ref nodesecgroup
+      Tags:
+      - Key: Name
+        Value: openshift-node1-test
+      InstanceType: !Ref NodeInstanceType
+      KeyName: !Ref KeyName
+      AvailabilityZone: !Ref AvailabilityZone
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", CentOS7]
+      BlockDeviceMappings:
+        - 
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 80
+
+  openshiftnode2:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      PrivateIpAddress: 172.31.0.122
+      SecurityGroupIds:
+        - !Ref nodesecgroup
+      Tags:
+      - Key: Name
+        Value: openshift-node2-test
+      InstanceType: !Ref NodeInstanceType
+      KeyName: !Ref KeyName
+      AvailabilityZone: !Ref AvailabilityZone
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", CentOS7] 
+      BlockDeviceMappings:
+        - 
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 80
+  openshiftnode3:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      PrivateIpAddress: 172.31.0.123
+      SecurityGroupIds:
+        - !Ref nodesecgroup
+      Tags:
+      - Key: Name
+        Value: openshift-node3-test
+      InstanceType: !Ref NodeInstanceType
+      KeyName: !Ref KeyName
+      AvailabilityZone: !Ref AvailabilityZone
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", CentOS7]
+      BlockDeviceMappings:
+        - 
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 80
+
+  ansible:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      SecurityGroupIds:
+        - !Ref ansiblesecgroup
+      Tags:
+      - Key: Name
+        Value: openshift-ansible-test
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      AvailabilityZone: !Ref AvailabilityZone
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", CentOS7]
+      BlockDeviceMappings:
+        - 
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 40
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum -y update && yum -y install git
+          git clone https://github.com/s-abe0/openshift-ansible-deploy.git /home/centos/openshift-ansible-deploy
+          chmod 775 /home/centos/openshift-ansible-deploy
+          chown -R centos:centos /home/centos/openshift-ansible-deploy
+          chmod +x /home/centos/openshift-ansible-deploy/deploy.sh
+          
+  volume1:
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      AvailabilityZone: !GetAtt openshiftnode1.AvailabilityZone
+      Size: !Ref GlusterStorageSize
+    DeletionPolicy: Delete
+
+  volat1:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: '/dev/xvdc'
+      VolumeId: !Ref volume1
+      InstanceId: !Ref openshiftnode1
+
+  volume2:
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      AvailabilityZone: !GetAtt openshiftnode2.AvailabilityZone
+      Size: !Ref GlusterStorageSize
+    DeletionPolicy: Delete
+
+  volat2:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: '/dev/xvdc'
+      VolumeId: !Ref volume2
+      InstanceId: !Ref openshiftnode2
+
+  volume3:
+    Type: 'AWS::EC2::Volume'
+    Properties:
+      AvailabilityZone: !GetAtt openshiftnode3.AvailabilityZone
+      Size: !Ref GlusterStorageSize
+    DeletionPolicy: Delete
+
+  volat3:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      Device: '/dev/xvdc'
+      VolumeId: !Ref volume3
+      InstanceId: !Ref openshiftnode3
+
+  mastersecgroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Security group for Openshift Master
+      SecurityGroupIngress:
+      - IpProtocol: -1
+        FromPort: -1
+        ToPort: -1
+        CidrIp: 172.31.0.0/16
+      - IpProtocol: tcp
+        FromPort: '8443'
+        ToPort: '8443'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+
+  nodesecgroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Security group for Openshift nodes
+      SecurityGroupIngress:
+      - IpProtocol: -1
+        FromPort: -1
+        ToPort: -1
+        CidrIp: 172.31.0.0/16
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
+
+  ansiblesecgroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Security group for the ansible server
+      SecurityGroupIngress:
+      - IpProtocol: -1
+        FromPort: -1
+        ToPort: -1
+        CidrIp: 172.31.0.0/16
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: 0.0.0.0/0
