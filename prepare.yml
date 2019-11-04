@@ -10,7 +10,7 @@
     - name: Install packages
       yum:
         name: net-tools, python, bind-utils, yum-utils, iptables-services, bridge-utils, bash-completion,
-              kexec-tools, sos, psacct, glusterfs-fuse, lvm2, NetworkManager, nfs-utils, docker-1.13.1
+              kexec-tools, sos, psacct, glusterfs-fuse, lvm2, NetworkManager, nfs-utils, docker-1.13.1, git
         state: latest
         
     - name: Start and Enable NetworkManager
