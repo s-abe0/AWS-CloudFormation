@@ -10,7 +10,8 @@
     - name: Install packages
       yum:
         name: net-tools, python, bind-utils, yum-utils, iptables-services, bridge-utils, bash-completion,
-              kexec-tools, sos, psacct, glusterfs-fuse, lvm2, NetworkManager, nfs-utils, docker-1.13.1, git
+              kexec-tools, sos, psacct, device-mapper-persistent-data, glusterfs-fuse, lvm2, NetworkManager, nfs-utils, 
+              docker-1.13.1, git
         state: latest
         
     - name: Start and Enable NetworkManager
@@ -31,6 +32,12 @@
         gpgcheck: false
         description: OKD 3.11 repo
         name: okd
+        
+    - name: Gluster FS Permissions 1
+      shell: setsebool -P virt_sandbox_use_fusefs on
+      
+    - name: Gluster FS Permissions 2
+      shell: setsebool -P virt_use_fusefs on
 
 - hosts: localhost
   become: true
@@ -46,4 +53,27 @@
         dest: /home/centos/openshift-ansible
         version: release-3.11
         
+- hosts: master.bnpdev.com
+  become: true
+  tasks:
+    - name: Set host name on master
+      command: hostnamectl set-hostname master.bnpdev.com
+      
+- hosts: node1.bnpdev.com
+  become: true
+  tasks:
+    - name: Set host name on node1
+      command: hostnamectl set-hostname node1.bnpdev.com
+      
+- hosts: node2.bnpdev.com
+  become: true
+  tasks:
+    - name: Set host name on node2
+      command: hostnamectl set-hostname node2.bnpdev.com
+      
+- hosts: node3.bnpdev.com
+  become: true
+  tasks:
+    - name: Set host name on node3
+      command: hostnamectl set-hostname node3.bnpdev.com
     
