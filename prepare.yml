@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: nodes
   become: true
   tasks:
     - name: Update yum cache
@@ -52,28 +52,5 @@
         repo: https://github.com/openshift/openshift-ansible
         dest: /home/centos/openshift-ansible
         version: release-3.11
-        
-- hosts: master.bnpdev.com
-  become: true
-  tasks:
-    - name: Set host name on master
-      command: hostnamectl set-hostname master.bnpdev.com
-      
-- hosts: node1.bnpdev.com
-  become: true
-  tasks:
-    - name: Set host name on node1
-      command: hostnamectl set-hostname node1.bnpdev.com
-      
-- hosts: node2.bnpdev.com
-  become: true
-  tasks:
-    - name: Set host name on node2
-      command: hostnamectl set-hostname node2.bnpdev.com
-      
-- hosts: node3.bnpdev.com
-  become: true
-  tasks:
-    - name: Set host name on node3
-      command: hostnamectl set-hostname node3.bnpdev.com
+
     
